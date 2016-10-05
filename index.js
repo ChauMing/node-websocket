@@ -14,6 +14,10 @@ app.use(express.static(path.resolve(__dirname, 'test', 'public')));
 
 const server = http.createServer(app);
 
-NW(server);
+const sockets = NW(server);
+
+setTimeout(function() {
+    console.log(sockets);
+}, 5000);
 
 server.listen(8888);

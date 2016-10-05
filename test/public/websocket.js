@@ -40,7 +40,13 @@
     // 事件分布
     function emitEvent(eventName) {
         return function(args) {
-            PubSub.emit(eventName, args);
+            if(eventName !== 'message') {
+                PubSub.emit(eventName, args);
+                return;
+            }
+
+            PubSub.emit(eventName, JSON.parse(args.data))
+
         }
     }
     // client类
@@ -49,19 +55,44 @@
         this.client.onopen = emitEvent('open');
         this.client.onmessage = emitEvent('message');
         this.client.onclose = emitEvent('close');
+        function get_client_id(data) {
+            this._id = data.uuid;
+            this.off('message', get_client_id);
+        }
+        this.on('message', get_client_id.bind(this))
     }
+
     Client.prototype = {
         contructor: Client,
         on: function(event, fn) {
             PubSub.on(event, fn);
         },
+        off: function(event, fn) {
+            PubSub.off(event, fn);
+        },
         send: function(msg) {
-            this.client.send(msg);
+            let that = this;
+            let data = {
+                _id: that._id
+            }
+            if(typeof msg === 'string') {
+                data.type = 'string';
+                data.message = msg;
+            }
+            if(typeof msg === 'object') {
+                data.type = 'object';
+                data.message = msg;
+            }
+            data.time = new Date();
+
+            this.client.send(JSON.stringify(data));
         },
         close: function() {
             this.client.close();
-        }
+        },
+        
     }
+
 
 
 
