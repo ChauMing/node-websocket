@@ -37,15 +37,15 @@
         return new Client(new WebSocket(url));
     }
 
-    // 事件分布
+    // 事件分发
     function emitEvent(eventName) {
         return function(args) {
+            console.log(eventName);
             if(eventName !== 'message') {
                 PubSub.emit(eventName, args);
                 return;
             }
-
-            PubSub.emit(eventName, JSON.parse(args.data))
+            PubSub.emit(eventName, args.data)
 
         }
     }
@@ -92,9 +92,6 @@
         },
         
     }
-
-
-
 
     exports.ws = ws;
 
